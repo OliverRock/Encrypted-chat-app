@@ -16,8 +16,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-import Protocol.KeyTool;
-import Protocol.SimpleProtocol;
+import protocol.KeyTool;
+import protocol.SimpleProtocol;
 
 public class Client {
 	
