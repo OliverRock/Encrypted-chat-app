@@ -30,12 +30,12 @@ public class SimpleProtocol {
 				result = result + ":__:";
 			result = result + escape(str);
 		}
-		System.out.println("send: " + result);
+		//System.out.println("send: " + result);
 		return result;
 	}
 
 	public String[] decodeMessage(String str) {
-		System.out.println("receive: " + str);
+		//System.out.println("receive: " + str);
 		if (str == null || str.equals("")) {
 			return new String[0];
 		}
