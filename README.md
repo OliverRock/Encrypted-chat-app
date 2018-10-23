@@ -1,6 +1,10 @@
 # Encrypted-chat-app
-This a group chat which implements RSA and AES encryption. 
+This a group chat application which implements RSA and AES encryption. RSA is used to exchange an AES key between the sever and a client. After which all messages are encrytped using AES.
 
-The server is started in Server class and should be given the arguments of the hosts address and a port e.g. localhost 50002
+The server can be started from the Server.jar file with an IP of the device and port as arguments e.g. java -jar Server.jar 127.0.0.1 50002
 
-Clients are started in the ChatClientApp class and should also be given arguments of the hosts address and a port e.g. localhost 50002
+Clients can be started from the ChatApp.jar file with the IP of the server and its port e.g. java -jar ChatApp.jar 127.0.0.1 50002
+
+127.0.0.1 is an IP address that points to itself, another way of writing local host.
+
+The server is multi thread and supports many users connecting to it.
