@@ -10,6 +10,11 @@ import java.security.spec.RSAPublicKeySpec;
 
 import javax.crypto.KeyGenerator;
 
+/**
+ * This class is used to generate keys. RSA and AES keys.
+ * @author oliverrock
+ *
+ */
 public class KeyTool {
 	
 	private static boolean _INIT_ = false;

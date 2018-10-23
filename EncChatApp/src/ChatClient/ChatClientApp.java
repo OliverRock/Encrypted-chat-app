@@ -4,6 +4,13 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 
+/**
+ * This class contains the main method to run the Chat Client App. It should be
+ * run with the args: IP Adress, port
+ * 
+ * @author oliverrock
+ *
+ */
 @SuppressWarnings("serial")
 public class ChatClientApp extends JFrame {
 

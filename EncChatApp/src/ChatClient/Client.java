@@ -1,4 +1,5 @@
 package ChatClient;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -19,39 +20,54 @@ import javax.crypto.spec.SecretKeySpec;
 import protocol.KeyTool;
 import protocol.SimpleProtocol;
 
+/**
+ * This class represents the client connection to the server. It contains
+ * methods to send and receive messages and encrypt and decrypt messages.
+ * 
+ * @author oliverrock
+ *
+ */
 public class Client {
-	
-	private Socket clientSocket;			// socket connecting to server
-	private DataOutputStream outToServer;	// output stream to server
-	private BufferedReader inFromServer;	// input stream from server
-	private SimpleProtocol protocol = new SimpleProtocol();		// pack and unpack messages
-	public Integer offset = -1;		// offset of messages, at the beginning it is -1. Update it to the offset of the latest message
-	private String host = "127.0.0.1";		// IP address of server
-	private Integer port = 50002;		// Port number of server
+
+	private Socket clientSocket; // socket connecting to server
+	private DataOutputStream outToServer; // output stream to server
+	private BufferedReader inFromServer; // input stream from server
+	private SimpleProtocol protocol = new SimpleProtocol(); // pack and unpack messages
+	public Integer offset = -1; // offset of messages, at the beginning it is -1. Update it to the offset of the
+								// latest message
+	private String host = "127.0.0.1"; // IP address of server
+	private Integer port = 50002; // Port number of server
 	private Key key2;
 	private Cipher cipher = null;
-	
-	public String createMessage(String... args){
+
+	/**
+	 * Method to create a message. It takes an array of strings, converts them into
+	 * the correct format with the protocol, then encrypts them.
+	 * 
+	 * @param args
+	 * @return
+	 */
+	public String createMessage(String... args) {
 		String result = protocol.createMessage(args);
 		try {
-			if(cipher == null){
+			if (cipher == null) {
 				cipher = Cipher.getInstance("AES");
 			}
 			cipher.init(Cipher.ENCRYPT_MODE, key2);
 			byte[] bytes = cipher.doFinal(result.getBytes());
 			String string = Base64.getEncoder().encodeToString(bytes);
 			return string;
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+		}
 		return result;
 	}
-	
-	/*
-	 * 		Read a line from server and unpack it using SimpleProtocol
+
+	/**
+	 * Read a line from server and unpack it using SimpleProtocol
 	 */
-	public String[] getResponse(){
+	public String[] getResponse() {
 		try {
 			byte[] bytes = Base64.getDecoder().decode(inFromServer.readLine());
 			cipher.init(Cipher.DECRYPT_MODE, key2);
@@ -62,11 +78,11 @@ public class Client {
 		}
 		return null;
 	}
-	
-	/*
-	 * 		Send sign-up request to server, return the response to GuiSignUp
+
+	/**
+	 * Send sign-up request to server, return the response to GuiSignUp
 	 */
-	public String[] signup(String user, String pass){
+	public String[] signup(String user, String pass) {
 		String string = createMessage("sign-up", user, pass);
 		try {
 			outToServer.writeBytes(string + "\n");
@@ -77,18 +93,18 @@ public class Client {
 			return null;
 		}
 	}
-	
-	/*
-	 * 		Send sign-in request to server, return the response to GuiSignIn
+
+	/**
+	 * Send sign-in request to server, return the response to GuiSignIn
 	 */
-	public String[] signin(String user, String pass){
+	public String[] signin(String user, String pass) {
 		String string = createMessage("sign-in", user, pass);
 		try {
 			outToServer.writeBytes(string + "\n");
 			String[] response = this.getResponse();
-			if(response[1].equals("true")){
+			if (response[1].equals("true")) {
 				System.out.println("Sign-in successful.");
-			}else{
+			} else {
 				System.out.println(response[2]);
 			}
 			return response;
@@ -97,11 +113,11 @@ public class Client {
 			return null;
 		}
 	}
-	
-	/*
-	 * 		Send get-message request to server
+
+	/**
+	 * Send get-message request to server
 	 */
-	public void get_message(){
+	public void get_message() {
 		String string = createMessage("get-message", this.offset.toString());
 		try {
 			outToServer.writeBytes(string + "\n");
@@ -110,11 +126,11 @@ public class Client {
 			e.printStackTrace();
 		}
 	}
-	
-	/*
-	 * 		Send a message to server.
+
+	/**
+	 * Send a message to server.
 	 */
-	public void send_message(String msg){
+	public void send_message(String msg) {
 		String string = createMessage("send-message", msg);
 		try {
 			outToServer.writeBytes(string + "\n");
@@ -123,24 +139,24 @@ public class Client {
 			e.printStackTrace();
 		}
 	}
-	
-	/*
-	 * 		Initialize socket and input/output streams
+
+	/**
+	 * Initialize socket and input/output streams
 	 */
-	public void start(){
+	public void start() {
 		try {
 			clientSocket = new Socket(this.host, this.port);
 			outToServer = new DataOutputStream(clientSocket.getOutputStream());
 			inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			
+
 			/***
-			 *        RSA: key exchange
+			 * RSA: key exchange
 			 */
-			
+
 			// Create RSA cipher
 			Cipher cipher = Cipher.getInstance("RSA");
 			cipher.init(Cipher.ENCRYPT_MODE, KeyTool.getRSAPublicKey());
-			
+
 			// Create AES key1
 			Key key1 = KeyTool.getAESKey();
 			// Encrypt key1 with RSA
@@ -148,7 +164,7 @@ public class Client {
 			// Transform byte[] to base64 string so that we can send it as a line
 			String key1RSA_base64 = Base64.getEncoder().encodeToString(key1RSA);
 			outToServer.writeBytes(key1RSA_base64 + "\n");
-			
+
 			// receive server's key2
 			String key2str = inFromServer.readLine();
 			// Transform from base64 string to byte[]
@@ -159,7 +175,7 @@ public class Client {
 			// Decrypt key2
 			byte[] key2bytes = cipher_aes_key1.doFinal(key2_AES_with_key1);
 			key2 = new SecretKeySpec(key2bytes, "AES");
-			
+
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -178,12 +194,13 @@ public class Client {
 		} catch (BadPaddingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}
 	}
+
 	/*
-	 * 		Close socket
+	 * Close socket
 	 */
-	public void stop(){
+	public void stop() {
 		try {
 			clientSocket.close();
 		} catch (IOException e) {
@@ -198,5 +215,5 @@ public class Client {
 	public void setPort(Integer port) {
 		this.port = port;
 	}
-	
+
 }

@@ -20,6 +20,13 @@ import javax.crypto.spec.SecretKeySpec;
 import protocol.KeyTool;
 import protocol.SimpleProtocol;
 
+/**
+ * This class is a runnable object that handles all requests from a client once
+ * they have connected.
+ * 
+ * @author oliverrock
+ *
+ */
 public class Handler implements Runnable {
 
 	private Socket socket = null;
@@ -35,6 +42,10 @@ public class Handler implements Runnable {
 		this.socket = socket;
 	}
 
+	/**
+	 * Send a message to the client, encrypts using AES
+	 * @param args
+	 */
 	public void sendToClient(String... args) {
 		try {
 			// create protocol message
@@ -61,6 +72,11 @@ public class Handler implements Runnable {
 		}
 	}
 
+	/**
+	 * Read message from the client and decodes it using AES
+	 * @return
+	 * @throws Exception
+	 */
 	public String[] getFromClient() throws Exception {
 		// read message in base 64 it
 		byte[] messageIn = Base64.getDecoder().decode(in.readLine());
@@ -101,9 +117,9 @@ public class Handler implements Runnable {
 
 			// bytes out fro key2
 			byte[] bytesOut = AESCipher.doFinal((key2.getEncoded()));
-			//base 64 encoder
+			// base 64 encoder
 			String stringOut = Base64.getEncoder().encodeToString(bytesOut);
-			//write key2 to client
+			// write key2 to client
 			out.writeBytes(stringOut + "\n");
 
 			// Sign in or create account

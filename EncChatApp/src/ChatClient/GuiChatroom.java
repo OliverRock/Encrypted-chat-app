@@ -17,6 +17,13 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.ActionEvent;
 import javax.swing.ScrollPaneConstants;
 
+/**
+ * Class contains the panal for the chat room. Once started it also initiates a
+ * thread to checkfor new messages.
+ * 
+ * @author oliverrock
+ *
+ */
 @SuppressWarnings("serial")
 public class GuiChatroom extends JPanel {
 	private JTextField txInput;
@@ -32,7 +39,7 @@ public class GuiChatroom extends JPanel {
 	public GuiChatroom() {
 		setLayout(null);
 		this.setBounds(0, 0, 800, 600);
-		
+
 		listChat = new JList<String>();
 		listChat.setValueIsAdjusting(true);
 		listChat.setModel(new DefaultListModel<String>());
@@ -40,18 +47,19 @@ public class GuiChatroom extends JPanel {
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setBounds(6, 6, 788, 514);
-		scrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {  
+		scrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 			private int prevMax = 0;
-		    public void adjustmentValueChanged(AdjustmentEvent e) {  
-		    	if(e.getAdjustable().getMaximum() != prevMax){
-		    		prevMax = e.getAdjustable().getMaximum();
-		    		e.getAdjustable().setValue(e.getAdjustable().getMaximum());
-		    	}
-		        
-		    }
+
+			public void adjustmentValueChanged(AdjustmentEvent e) {
+				if (e.getAdjustable().getMaximum() != prevMax) {
+					prevMax = e.getAdjustable().getMaximum();
+					e.getAdjustable().setValue(e.getAdjustable().getMaximum());
+				}
+
+			}
 		});
 		add(scrollPane);
-		
+
 		txInput = new JTextField();
 		txInput.setBounds(16, 532, 587, 29);
 		txInput.setColumns(10);
@@ -62,17 +70,14 @@ public class GuiChatroom extends JPanel {
 			}
 		});
 		add(txInput);
-		
-		
+
 		btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String msg = txInput.getText();
-				if(msg.equals("")){
-					JOptionPane.showMessageDialog(ChatClientApp.frame,
-						    "You can not send empty messages!",
-						    "Warning",
-						    JOptionPane.WARNING_MESSAGE);
+				if (msg.equals("")) {
+					JOptionPane.showMessageDialog(ChatClientApp.frame, "You can not send empty messages!", "Warning",
+							JOptionPane.WARNING_MESSAGE);
 					return;
 				}
 				txInput.setText("");
@@ -84,21 +89,25 @@ public class GuiChatroom extends JPanel {
 		add(btnSend);
 
 	}
-	
-	public void StartCheckingMessages(){
-		
+
+	/**
+	 * Method to start a thread to check for new messages.
+	 */
+	public void StartCheckingMessages() {
+
 		thread = new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
-				while(true){
+				while (true) {
 					String[] response = ChatClientApp.frame.client.getResponse();
-					if(response[0].equals("get-message")){
+					if (response[0].equals("get-message")) {
 						DefaultListModel<String> model = (DefaultListModel<String>) listChat.getModel();
-						for(int i=1; i<response.length; i=i+4){
-							if(ChatClientApp.frame.client.offset < Integer.parseInt(response[i])){
+						for (int i = 1; i < response.length; i = i + 4) {
+							if (ChatClientApp.frame.client.offset < Integer.parseInt(response[i])) {
 								ChatClientApp.frame.client.offset = Integer.parseInt(response[i]);
-								model.addElement(String.format("%s @ (%s): %s", response[i+1], response[i+2], response[i+3]));
+								model.addElement(String.format("%s @ (%s): %s", response[i + 1], response[i + 2],
+										response[i + 3]));
 								try {
 									Thread.sleep(10);
 								} catch (InterruptedException e) {
@@ -106,16 +115,14 @@ public class GuiChatroom extends JPanel {
 								}
 							}
 						}
-						
+
 					}
-					if(response[0].equals("send-message")){
-						if(response[1].equals("true")){
+					if (response[0].equals("send-message")) {
+						if (response[1].equals("true")) {
 							System.out.println("Message sent.");
-						}else{
-							JOptionPane.showMessageDialog(ChatClientApp.frame,
-								    "Cannot send message!",
-								    "Error",
-								    JOptionPane.WARNING_MESSAGE);
+						} else {
+							JOptionPane.showMessageDialog(ChatClientApp.frame, "Cannot send message!", "Error",
+									JOptionPane.WARNING_MESSAGE);
 						}
 					}
 				}
@@ -129,11 +136,10 @@ public class GuiChatroom extends JPanel {
 				ChatClientApp.frame.client.get_message();
 			}
 		}, 1000, 2000);
-		
+
 	}
-	public void StopCheckingMessages(){
+
+	public void StopCheckingMessages() {
 		timer.cancel();
 	}
 }
-
-
